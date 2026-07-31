@@ -4,3 +4,4 @@ plotly
 pytz
 SQLAlchemy
 psycopg2-binary
+openpyxl
