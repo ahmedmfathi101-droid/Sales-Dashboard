@@ -75,6 +75,10 @@ with conn.session as s:
             entered_by VARCHAR(50)
         )
     '''))
+    
+    # إصلاح الخطأ: إضافة العمود الجديد للجدول القديم بأمان
+    s.execute(text("ALTER TABLE sales_data ADD COLUMN IF NOT EXISTS entered_by VARCHAR(50);"))
+    
     # جدول الأهداف (Targets)
     s.execute(text('''
         CREATE TABLE IF NOT EXISTS daily_targets (
@@ -189,7 +193,7 @@ with tab1:
             delta={'reference': today_target, 'position': "top", 'font': {'color': 'white'}},
             number={'suffix': " د.ك", 'font': {'color': 'white'}},
             gauge={
-                'axis': {'range': [0, max(today_target, today_sales) * 1.2], 'tickwidth': 1, 'tickcolor': "white"},
+                'axis': {'range': [0, max(today_target, today_sales) * 1.2 if today_target > 0 else 100], 'tickwidth': 1, 'tickcolor': "white"},
                 'bar': {'color': ach_color},
                 'bgcolor': "rgba(255,255,255,0.05)",
                 'steps': [
@@ -212,16 +216,42 @@ with tab1:
         else:
             st.info("لم يتم تسجيل مبيعات لليوم الحالي بعد.")
 
-# --- التبويب الثاني (تحليلات) تم اختصاره للتركيز على الميزات الجديدة ---
+# --- التبويب الثاني (تحليلات متقدمة) ---
 with tab2:
     if not df.empty:
-        df_daily = df.groupby('Date')['Sales'].sum().reset_index()
-        fig_trend = px.bar(df_daily, x="Date", y="Sales", text="Sales", title="مقارنة الأداء الإجمالي للأيام")
-        fig_trend.update_traces(marker_color='#3699ff', texttemplate='%{text:,.0f}')
-        fig_trend.update_layout(plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)", font=dict(color="white"))
-        st.plotly_chart(fig_trend, use_container_width=True)
+        col_heat, col_trend = st.columns(2)
+        with col_heat:
+            fig_heat = px.density_heatmap(df, x="Time_Slot", y="Date", z="Sales", histfunc="sum", title="خريطة الكثافة: تركز المبيعات حسب الأيام والفترات")
+            fig_heat.update_layout(paper_bgcolor="rgba(0,0,0,0)", font=dict(color="white"))
+            st.plotly_chart(fig_heat, use_container_width=True)
+            
+        with col_trend:
+            df_daily = df.groupby('Date')['Sales'].sum().reset_index()
+            fig_trend = px.bar(df_daily, x="Date", y="Sales", text="Sales", title="مقارنة الأداء الإجمالي للأيام")
+            fig_trend.update_traces(marker_color='#3699ff', texttemplate='%{text:,.0f}')
+            fig_trend.update_layout(plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)", font=dict(color="white"))
+            st.plotly_chart(fig_trend, use_container_width=True)
+
+        st.markdown("---")
+        col_insight1, col_insight2 = st.columns(2)
+        
+        with col_insight1:
+            df_slots = df.groupby('Time_Slot')['Sales'].sum().reset_index()
+            best_slot = df_slots.loc[df_slots['Sales'].idxmax()]
+            st.markdown(f"<div class='insight-box'><h4 style='color: #3699ff; margin-top:0;'>🎯 تحليل السلوك البيعي</h4>أظهرت البيانات التاريخية أن <b>{best_slot['Time_Slot']}</b> هي فترة الذروة، بإجمالي مبيعات بلغت <b>{best_slot['Sales']:,.2f} د.ك</b>.</div>", unsafe_allow_html=True)
+            
+        with col_insight2:
+            df_today = df[df['Date'] == today_date]
+            if not df_today.empty and len(df_today) < 3:
+                avg_run_rate = df_today['Sales'].sum() / len(df_today)
+                projected_sales = avg_run_rate * 3
+                st.markdown(f"<div class='insight-box'><h4 style='color: #00E676; margin-top:0;'>📈 التوقع الخوارزمي للإغلاق</h4>من المتوقع أن يتم إغلاق شيفت اليوم بمبيعات تصل إلى <b>{projected_sales:,.2f} د.ك</b>.</div>", unsafe_allow_html=True)
+            elif not df_today.empty and len(df_today) >= 3:
+                st.markdown(f"<div class='insight-box'>تم تسجيل كافة فترات اليوم. عملية التحليل مغلقة لهذا الشيفت.</div>", unsafe_allow_html=True)
+            else:
+                st.markdown(f"<div class='insight-box'>بانتظار المدخلات الأولى لليوم لبناء توقعات الإغلاق.</div>", unsafe_allow_html=True)
     else:
-        st.warning("التحليلات تتطلب بيانات.")
+        st.warning("التحليلات تتطلب بيانات مدخلة.")
 
 # --- التبويب الثالث: استخراج التقارير وإدارة البيانات ---
 with tab3:
