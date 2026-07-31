@@ -1,9 +1,17 @@
-# تجاهل قواعد بيانات DuckDB
-*.db
-*.wal
-
-# تجاهل ملفات بيئة بايثون الوهمية إذا كنت تستخدمها
-__pycache__/
-.venv/
-venv/
+# Streamlit secrets (VERY IMPORTANT)
 .streamlit/
+secrets.toml
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Old local databases (if any)
+*.db
+*.sqlite3
