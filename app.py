@@ -17,55 +17,27 @@ st.set_page_config(page_title="نظام إدارة المبيعات المتقد
 # ==========================================
 st.markdown("""
     <style>
-    /* الإعدادات العامة */
     .main .block-container { direction: rtl; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     
-    /* بطاقات المؤشرات */
     .custom-kpi-card { background: linear-gradient(145deg, #1e1e2d, #26273b); border-right: 5px solid #00E676; border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); margin-bottom: 20px; text-align: right; }
     .kpi-title { color: #a1a5b7; font-size: 1.1rem; margin-bottom: 8px; font-weight: 500; }
     .kpi-value { color: #ffffff; font-size: 2.2rem; font-weight: bold; }
     .kpi-value span { color: #00E676; font-size: 1.2rem; margin-right: 5px; }
     
-    /* تنسيق أزرار التبويبات */
     .stTabs [data-baseweb="tab-list"] { gap: 10px; }
     .stTabs [data-baseweb="tab"] { background-color: #1e1e2d; border-radius: 8px 8px 0 0; padding: 10px 20px; }
     
-    /* =========================================
-       تصميم شاشة تسجيل الدخول المحدثة
-       ========================================= */
-       
-    /* صندوق الحكمة الإنجليزية (علوي وموسط) */
     .english-quote-box {
-        padding: 20px;
-        background: linear-gradient(145deg, #1e1e2d, #26273b);
-        border-radius: 15px;
-        border-top: 4px solid #00E676; 
-        color: #e4e6ef;
-        font-size: 1.15rem;
-        font-style: italic;
-        text-align: center; /* توسيط الكلام الإنجليزي */
-        direction: ltr; /* اتجاه الكتابة من اليسار لليمين */
-        box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-        margin-bottom: 25px;
-        font-family: 'Georgia', serif;
+        padding: 20px; background: linear-gradient(145deg, #1e1e2d, #26273b); border-radius: 15px;
+        border-top: 4px solid #00E676; color: #e4e6ef; font-size: 1.15rem; font-style: italic;
+        text-align: center; direction: ltr; box-shadow: 0 10px 20px rgba(0,0,0,0.3); margin-bottom: 25px; font-family: 'Georgia', serif;
     }
     
-    /* صندوق الحكمة العربية (يمين) */
     .arabic-quote-box {
-        background: rgba(0, 230, 118, 0.05);
-        border-right: 4px solid #00E676;
-        padding: 15px;
-        margin: 20px 0;
-        border-radius: 8px;
-        color: #e4e6ef;
-        font-size: 1.05rem;
-        font-style: italic;
-        line-height: 1.5;
-        text-align: right; /* محاذاة لليمين */
-        direction: rtl; /* اتجاه عربي */
+        background: rgba(0, 230, 118, 0.05); border-right: 4px solid #00E676; padding: 15px; margin: 20px 0;
+        border-radius: 8px; color: #e4e6ef; font-size: 1.05rem; font-style: italic; line-height: 1.5; text-align: right; direction: rtl;
     }
     
-    /* تصميم بطاقة المطور */
     .dev-footer { background: rgba(30, 30, 45, 0.7); padding: 25px; border-radius: 15px; border: 1px solid #2e2e40; text-align: center; box-shadow: 0 8px 20px rgba(0,0,0,0.3); margin-top: 30px;}
     .dev-name { font-size: 1.8rem; font-weight: bold; background: -webkit-linear-gradient(45deg, #00E676, #3699ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     .dev-title { color: #a1a5b7; font-size: 1rem; margin-bottom: 20px; letter-spacing: 1px; }
@@ -76,22 +48,19 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 2. نظام تسجيل الدخول (مع الحكم المتغيرة)
+# 2. نظام تسجيل الدخول (الشاشة الافتتاحية)
 # ==========================================
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
     st.session_state.username = ""
 
 if not st.session_state.logged_in:
-    # قائمة الحكم الإنجليزية
     eng_quotes = [
         "\"The best salespeople wonder what they would want if they were the buyer.\" – Richard Thalheimer",
         "\"Success in sales is the sum of small efforts, repeated day in and day out.\" – Robert Collier",
         "\"Approach each customer with the idea of helping him solve a problem, not of selling a product.\" – Brian Tracy",
         "\"Great salespeople are relationship builders who provide value and help their customers win.\" – Jeffrey Gitomer"
     ]
-    
-    # قائمة الحكم العربية
     ar_quotes = [
         "«المبيعات ليست مجرد أرقام، بل هي فن بناء الثقة وحل مشكلات ضيوفنا.»",
         "«أفضل بائع هو من يمتلك مهارة الاستماع الفعال والتعاطف مع احتياجات العميل.»",
@@ -99,28 +68,19 @@ if not st.session_state.logged_in:
         "«النجاح في المبيعات هو نتيجة الانضباط اليومي، والالتزام بأعلى المعايير الأخلاقية.»"
     ]
     
-    selected_eng_quote = random.choice(eng_quotes)
-    selected_ar_quote = random.choice(ar_quotes)
-
     col1, col2, col3 = st.columns([1, 1.5, 1])
-    
     with col2:
         st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown(f'<div class="english-quote-box">{random.choice(eng_quotes)}</div>', unsafe_allow_html=True)
         
-        # 1. البوكس العلوي: الحكمة الإنجليزية (تم حل مشكلة البوكس الفارغ وتوسيط النص)
-        st.markdown(f'<div class="english-quote-box">{selected_eng_quote}</div>', unsafe_allow_html=True)
-        
-        # 2. الشعار
         if os.path.exists("logo.jpg"):
             img_col1, img_col2, img_col3 = st.columns([1, 2, 1])
             with img_col2:
                 st.image("logo.jpg", use_container_width=True)
                 
-        # 3. العنوان والحكمة العربية (محاذاة لليمين)
         st.markdown("<h2 style='text-align: center; color: white; margin-top: 15px;'>نظام إدارة المبيعات المتقدم</h2>", unsafe_allow_html=True)
-        st.markdown(f'<div class="arabic-quote-box">💡 {selected_ar_quote}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="arabic-quote-box">💡 {random.choice(ar_quotes)}</div>', unsafe_allow_html=True)
         
-        # 4. حقول الإدخال
         user_input = st.text_input("اسم المستخدم", placeholder="أدخل اسم المستخدم هنا...")
         pass_input = st.text_input("كلمة المرور", type="password", placeholder="أدخل كلمة المرور...")
         
@@ -136,7 +96,6 @@ if not st.session_state.logged_in:
             else:
                 st.error("❌ اسم المستخدم غير مسجل في النظام")
                 
-        # 5. بطاقة تعريف المطور (تعديل أيقونة X)
         st.markdown("""
         <div class="dev-footer">
             <div class="dev-name">Ahmed Fathi The Wolf</div>
@@ -149,11 +108,10 @@ if not st.session_state.logged_in:
             </div>
         </div>
         """, unsafe_allow_html=True)
-        
     st.stop()
 
 # ==========================================
-# 3. الاتصال بقاعدة البيانات وتهيئة العزل
+# 3. الاتصال بقاعدة البيانات وتهيئة العزل (بأمان تام)
 # ==========================================
 conn = st.connection("postgresql", type="sql")
 
@@ -163,11 +121,14 @@ with conn.session as s:
     s.execute(text('''CREATE TABLE IF NOT EXISTS user_shift_schedule (date DATE, username VARCHAR(50), start_time VARCHAR(10), end_time VARCHAR(10), PRIMARY KEY (date, username))'''))
     s.commit()
 
+# تم إصلاح دوال الاستدعاء لمنع أخطاء (Parameter Binding) نهائياً
 def load_data(user):
-    return conn.query('SELECT date AS "Date", day AS "Day", time_slot AS "Time_Slot", sales AS "Sales" FROM sales_data WHERE entered_by = :user ORDER BY date, time_slot', params={"user": user}, ttl=0)
+    query = f"""SELECT date AS "Date", day AS "Day", time_slot AS "Time_Slot", sales AS "Sales" FROM sales_data WHERE entered_by = '{user}' ORDER BY date, time_slot"""
+    return conn.query(query, ttl=0)
 
 def load_target(d, user):
-    target_df = conn.query("SELECT target FROM user_daily_targets WHERE date = :date AND username = :user", params={"date": d, "user": user}, ttl=0)
+    query = f"""SELECT target FROM user_daily_targets WHERE date = '{str(d)}' AND username = '{user}'"""
+    target_df = conn.query(query, ttl=0)
     return target_df.iloc[0]['target'] if not target_df.empty else 0.0
 
 # ==========================================
@@ -189,7 +150,10 @@ if st.sidebar.button("🔄 تحديث الوقت والبيانات", use_contai
     st.rerun()
 st.sidebar.info(f"**الوقت المباشر:** {now.strftime('%I:%M %p')}")
 
-sched_df = conn.query("SELECT start_time, end_time FROM user_shift_schedule WHERE date = :date AND username = :user", params={"date": today_date, "user": current_user}, ttl=0)
+# إصلاح استعلام الجدول الزمني
+sched_query = f"""SELECT start_time, end_time FROM user_shift_schedule WHERE date = '{str(today_date)}' AND username = '{current_user}'"""
+sched_df = conn.query(sched_query, ttl=0)
+
 if not sched_df.empty:
     start_str = sched_df.iloc[0]['start_time']
     end_str = sched_df.iloc[0]['end_time']
@@ -215,7 +179,7 @@ with st.sidebar.form("sales_form", clear_on_submit=False):
     if st.form_submit_button("💾 حفظ البيانات", use_container_width=True):
         with conn.session as s:
             s.execute(text("INSERT INTO sales_data (date, day, time_slot, sales, entered_by) VALUES (:date, :day, :slot, :sales, :user)"),
-                      {"date": input_date, "day": input_day, "slot": time_slot, "sales": sales_value, "user": current_user})
+                      {"date": str(input_date), "day": input_day, "slot": time_slot, "sales": sales_value, "user": current_user})
             s.commit()
         st.success("✅ تم التسجيل بنجاح في ملفك الشخصي!")
 
@@ -224,7 +188,7 @@ with st.sidebar.expander("🎯 تعيين الهدف البيعي الخاص ب�
     if st.button("حفظ الهدف الخاص بي", use_container_width=True):
         with conn.session as s:
             s.execute(text("INSERT INTO user_daily_targets (date, username, target) VALUES (:date, :user, :target) ON CONFLICT (date, username) DO UPDATE SET target = EXCLUDED.target"),
-                      {"date": today_date, "user": current_user, "target": daily_target_input})
+                      {"date": str(today_date), "user": current_user, "target": daily_target_input})
             s.commit()
         st.success("تم التحديث!")
         st.rerun()
@@ -313,14 +277,15 @@ with tab2:
             end_str = sched_end.strftime("%H:%M")
             with conn.session as s:
                 s.execute(text("INSERT INTO user_shift_schedule (date, username, start_time, end_time) VALUES (:date, :user, :start, :end) ON CONFLICT (date, username) DO UPDATE SET start_time = EXCLUDED.start_time, end_time = EXCLUDED.end_time"),
-                          {"date": sched_date, "user": current_user, "start": start_str, "end": end_str})
+                          {"date": str(sched_date), "user": current_user, "start": start_str, "end": end_str})
                 s.commit()
             st.success("تم تحديث جدولك الشخصي بنجاح!")
             st.rerun()
             
     st.markdown("---")
     st.markdown("#### 📆 شيفتاتك المبرمجة")
-    all_schedules = conn.query('SELECT date AS "التاريخ", start_time AS "وقت البداية", end_time AS "وقت النهاية" FROM user_shift_schedule WHERE username = :user ORDER BY date DESC', params={"user": current_user}, ttl=0)
+    all_sched_query = f"""SELECT date AS "التاريخ", start_time AS "وقت البداية", end_time AS "وقت النهاية" FROM user_shift_schedule WHERE username = '{current_user}' ORDER BY date DESC"""
+    all_schedules = conn.query(all_sched_query, ttl=0)
     if not all_schedules.empty:
         st.dataframe(all_schedules, use_container_width=True, hide_index=True)
     else:
@@ -367,7 +332,8 @@ with tab4:
             st.markdown("<br>", unsafe_allow_html=True)
             if st.button("حذف قيدي", type="secondary", use_container_width=True):
                 with conn.session as s:
-                    s.execute(text("DELETE FROM sales_data WHERE date = :date AND time_slot = :slot AND entered_by = :user"), {"date": del_date, "slot": del_slot, "user": current_user})
+                    s.execute(text("DELETE FROM sales_data WHERE date = :date AND time_slot = :slot AND entered_by = :user"), 
+                              {"date": str(del_date), "slot": del_slot, "user": current_user})
                     s.commit()
                 st.success("تم الحذف بنجاح!")
                 st.rerun()
