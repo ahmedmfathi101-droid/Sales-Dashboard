@@ -7,6 +7,7 @@ import pytz
 from sqlalchemy import text
 import io
 import os
+import random
 
 # إعداد الصفحة
 st.set_page_config(page_title="نظام إدارة المبيعات المتقدم", page_icon="📈", layout="wide")
@@ -30,11 +31,9 @@ st.markdown("""
     .stTabs [data-baseweb="tab-list"] { gap: 10px; }
     .stTabs [data-baseweb="tab"] { background-color: #1e1e2d; border-radius: 8px 8px 0 0; padding: 10px 20px; }
     
-    /* =========================================
-       تصميم شاشة تسجيل الدخول الاحترافية 
-       ========================================= */
+    /* تصميم شاشة تسجيل الدخول الاحترافية */
     .login-box { 
-        padding: 40px; 
+        padding: 30px; 
         background: linear-gradient(145deg, #1e1e2d, #26273b); 
         border-radius: 20px; 
         box-shadow: 0 15px 35px rgba(0,0,0,0.5); 
@@ -43,87 +42,64 @@ st.markdown("""
         margin-bottom: 30px;
     }
     
-    /* تصميم بطاقة المطور */
-    .dev-footer {
-        background: rgba(30, 30, 45, 0.7);
-        padding: 25px;
-        border-radius: 15px;
-        border: 1px solid #2e2e40;
-        text-align: center;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-    }
-    .dev-name {
-        font-size: 1.8rem;
-        font-weight: bold;
-        background: -webkit-linear-gradient(45deg, #00E676, #3699ff);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        margin-bottom: 5px;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-    .dev-title {
-        color: #a1a5b7;
-        font-size: 1rem;
-        margin-bottom: 20px;
-        letter-spacing: 1px;
-    }
-    .social-links {
-        display: flex;
-        justify-content: center;
-        gap: 15px;
-        flex-wrap: wrap;
-        direction: ltr; /* للحفاظ على ترتيب الأيقونات الانجليزية */
-    }
-    .social-links a {
-        color: #e4e6ef;
-        text-decoration: none;
-        font-size: 0.95rem;
-        font-weight: 500;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        transition: all 0.3s ease;
-        padding: 10px 18px;
-        background: #232334;
+    /* تصميم بوكس الحكمة التحفيزية */
+    .sales-quote-box {
+        background: rgba(0, 230, 118, 0.05);
+        border-right: 3px solid #00E676;
+        padding: 15px;
+        margin: 20px 0;
         border-radius: 8px;
-        border: 1px solid #333;
+        color: #e4e6ef;
+        font-size: 1.05rem;
+        font-style: italic;
+        line-height: 1.5;
     }
-    .social-links a:hover {
-        background: #3699ff;
-        color: white;
-        border-color: #3699ff;
-        transform: translateY(-3px);
-        box-shadow: 0 5px 15px rgba(54, 153, 255, 0.4);
-    }
+    
+    /* تصميم بطاقة المطور */
+    .dev-footer { background: rgba(30, 30, 45, 0.7); padding: 25px; border-radius: 15px; border: 1px solid #2e2e40; text-align: center; box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
+    .dev-name { font-size: 1.8rem; font-weight: bold; background: -webkit-linear-gradient(45deg, #00E676, #3699ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    .dev-title { color: #a1a5b7; font-size: 1rem; margin-bottom: 20px; letter-spacing: 1px; }
+    .social-links { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; direction: ltr; }
+    .social-links a { color: #e4e6ef; text-decoration: none; font-size: 0.95rem; font-weight: 500; display: flex; align-items: center; gap: 8px; transition: all 0.3s ease; padding: 10px 18px; background: #232334; border-radius: 8px; border: 1px solid #333; }
+    .social-links a:hover { background: #3699ff; color: white; border-color: #3699ff; transform: translateY(-3px); box-shadow: 0 5px 15px rgba(54, 153, 255, 0.4); }
     </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 2. نظام تسجيل الدخول (الشاشة الافتتاحية)
+# 2. نظام تسجيل الدخول (مع بوكس الحكمة)
 # ==========================================
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
     st.session_state.username = ""
 
 if not st.session_state.logged_in:
-    # استخدام أعمدة لتوسيط المحتوى في الشاشة
+    # قائمة الحكم والمقولات (مخصصة للبيع وبناء العلاقات)
+    quotes = [
+        "«المبيعات ليست مجرد أرقام، بل هي فن بناء الثقة وحل مشكلات ضيوفنا.»",
+        "«أفضل بائع هو من يمتلك مهارة الاستماع الفعال والتعاطف مع احتياجات العميل.»",
+        "«لا تبيع منتجاً، بل قدم رعايةً وحلاً يصنع فارقاً حقيقياً.»",
+        "«النجاح في المبيعات هو نتيجة الانضباط اليومي، والالتزام بأعلى المعايير الأخلاقية.»",
+        "«كل مكالمة هي فرصة جديدة لبناء علاقة استثنائية وترك أثر إيجابي.»"
+    ]
+    selected_quote = random.choice(quotes)
+
     col1, col2, col3 = st.columns([1, 1.5, 1])
     
     with col2:
         st.markdown("<br><br>", unsafe_allow_html=True)
         
-        # 1. عرض الشعار (Logo)
+        # عرض الشعار
         if os.path.exists("logo.jpg"):
-            # توسيط الصورة داخل العمود
             img_col1, img_col2, img_col3 = st.columns([1, 2, 1])
             with img_col2:
                 st.image("logo.jpg", use_container_width=True)
-        else:
-            st.warning("⚠️ الشعار غير موجود. يرجى التأكد من تسمية الصورة 'logo.jpg' ووضعها في مجلد المشروع.")
-
-        # 2. صندوق تسجيل الدخول
+        
+        # صندوق تسجيل الدخول
         st.markdown('<div class="login-box">', unsafe_allow_html=True)
-        st.markdown("<h2 style='text-align: center; color: white; margin-bottom: 20px;'>نظام إدارة المبيعات المتقدم</h2>", unsafe_allow_html=True)
+        st.markdown("<h2 style='text-align: center; color: white; margin-bottom: 5px;'>نظام إدارة المبيعات المتقدم</h2>", unsafe_allow_html=True)
+        
+        # بوكس الحكمة المضاف حديثاً
+        st.markdown(f'<div class="sales-quote-box">💡 {selected_quote}</div>', unsafe_allow_html=True)
         
         user_input = st.text_input("اسم المستخدم", placeholder="أدخل اسم المستخدم هنا...")
         pass_input = st.text_input("كلمة المرور", type="password", placeholder="أدخل كلمة المرور...")
@@ -141,7 +117,7 @@ if not st.session_state.logged_in:
                 st.error("❌ اسم المستخدم غير مسجل في النظام")
         st.markdown('</div>', unsafe_allow_html=True)
         
-        # 3. بطاقة تعريف المطور (Developer Footer)
+        # بطاقة تعريف المطور
         st.markdown("""
         <div class="dev-footer">
             <div class="dev-name">Ahmed Fathi The Wolf</div>
@@ -155,7 +131,7 @@ if not st.session_state.logged_in:
         </div>
         """, unsafe_allow_html=True)
         
-    st.stop() # إيقاف التنفيذ هنا حتى يتم تسجيل الدخول
+    st.stop()
 
 # ==========================================
 # 3. الاتصال بقاعدة البيانات وتهيئة العزل
@@ -163,24 +139,9 @@ if not st.session_state.logged_in:
 conn = st.connection("postgresql", type="sql")
 
 with conn.session as s:
-    s.execute(text('''
-        CREATE TABLE IF NOT EXISTS sales_data (
-            id SERIAL PRIMARY KEY, date DATE, day VARCHAR(50),
-            time_slot VARCHAR(100), sales DOUBLE PRECISION, entered_by VARCHAR(50)
-        )
-    '''))
-    s.execute(text('''
-        CREATE TABLE IF NOT EXISTS user_daily_targets (
-            date DATE, username VARCHAR(50), target DOUBLE PRECISION,
-            PRIMARY KEY (date, username)
-        )
-    '''))
-    s.execute(text('''
-        CREATE TABLE IF NOT EXISTS user_shift_schedule (
-            date DATE, username VARCHAR(50), start_time VARCHAR(10), end_time VARCHAR(10),
-            PRIMARY KEY (date, username)
-        )
-    '''))
+    s.execute(text('''CREATE TABLE IF NOT EXISTS sales_data (id SERIAL PRIMARY KEY, date DATE, day VARCHAR(50), time_slot VARCHAR(100), sales DOUBLE PRECISION, entered_by VARCHAR(50))'''))
+    s.execute(text('''CREATE TABLE IF NOT EXISTS user_daily_targets (date DATE, username VARCHAR(50), target DOUBLE PRECISION, PRIMARY KEY (date, username))'''))
+    s.execute(text('''CREATE TABLE IF NOT EXISTS user_shift_schedule (date DATE, username VARCHAR(50), start_time VARCHAR(10), end_time VARCHAR(10), PRIMARY KEY (date, username))'''))
     s.commit()
 
 def load_data(user):
@@ -278,11 +239,10 @@ if not df.empty:
 
 tab1, tab2, tab3, tab4 = st.tabs(["📈 المتابعة المباشرة", "📅 جدول مواعيد العمل الخاص بي", "🧠 التحليلات الاستراتيجية", "⚙️ التقارير الشخصية"])
 
-# --- التبويب الأول: المتابعة المباشرة ---
+# --- التبويب الأول ---
 with tab1:
     today_sales = df[df['Date'] == today_date]['Sales'].sum() if not df.empty else 0
     achievement_perc = (today_sales / today_target * 100) if today_target > 0 else 0
-
     c1, c2, c3 = st.columns(3)
     ach_color = "#00E676" if achievement_perc >= 100 else ("#FFB822" if achievement_perc >= 75 else "#F64E60")
     
@@ -294,8 +254,7 @@ with tab1:
     with g1:
         time_color = "#FF4B4B" if remaining_hours < 2 else "#00E676"
         fig_time = go.Figure(go.Indicator(
-            mode="gauge+number", value=remaining_hours,
-            title={'text': "⏳ ساعات العمل المتبقية", 'font': {'color': 'white'}},
+            mode="gauge+number", value=remaining_hours, title={'text': "⏳ ساعات العمل المتبقية", 'font': {'color': 'white'}},
             number={'suffix': " ساعة", 'font': {'color': 'white'}, 'valueformat': ".1f"},
             gauge={'axis': {'range': [0, total_shift_hours], 'tickwidth': 1, 'tickcolor': "white"}, 'bar': {'color': time_color}, 'bgcolor': "rgba(255,255,255,0.05)"}
         ))
@@ -304,10 +263,8 @@ with tab1:
         
     with g2:
         fig_target = go.Figure(go.Indicator(
-            mode="gauge+number+delta", value=today_sales,
-            title={'text': "🎯 مسارك نحو الهدف", 'font': {'color': 'white'}},
-            delta={'reference': today_target, 'position': "top", 'font': {'color': 'white'}},
-            number={'suffix': " د.ك", 'font': {'color': 'white'}},
+            mode="gauge+number+delta", value=today_sales, title={'text': "🎯 مسارك نحو الهدف", 'font': {'color': 'white'}},
+            delta={'reference': today_target, 'position': "top", 'font': {'color': 'white'}}, number={'suffix': " د.ك", 'font': {'color': 'white'}},
             gauge={'axis': {'range': [0, max(today_target, today_sales) * 1.2 if today_target > 0 else 100], 'tickwidth': 1, 'tickcolor': "white"},
                    'bar': {'color': ach_color}, 'bgcolor': "rgba(255,255,255,0.05)",
                    'threshold': {'line': {'color': "white", 'width': 4}, 'thickness': 0.75, 'value': today_target}}
@@ -324,17 +281,14 @@ with tab1:
     else:
         st.info("لم يتم تسجيل مبيعات لليوم الحالي بعد.")
 
-# --- التبويب الثاني: جدول مواعيد العمل ---
+# --- التبويب الثاني ---
 with tab2:
     st.markdown("### 📅 إعداد جدول مواعيدك")
-    st.markdown("الجدول الذي يتم إدخاله هنا خاص بك فقط ولن يؤثر على باقي المستخدمين.")
-    
     with st.form("schedule_form"):
         col_s1, col_s2, col_s3 = st.columns(3)
         with col_s1: sched_date = st.date_input("تاريخ الشيفت المستهدف")
         with col_s2: sched_start = st.time_input("وقت البداية", value=datetime.strptime("09:00", "%H:%M").time())
         with col_s3: sched_end = st.time_input("وقت النهاية", value=datetime.strptime("19:00", "%H:%M").time())
-        
         if st.form_submit_button("حفظ الموعد 💾", type="primary"):
             start_str = sched_start.strftime("%H:%M")
             end_str = sched_end.strftime("%H:%M")
@@ -353,7 +307,7 @@ with tab2:
     else:
         st.info("جدولك فارغ حالياً.")
 
-# --- التبويب الثالث: تحليلات متقدمة ---
+# --- التبويب الثالث ---
 with tab3:
     if not df.empty:
         col_heat, col_trend = st.columns(2)
@@ -370,7 +324,7 @@ with tab3:
     else:
         st.warning("التحليلات تتطلب بيانات مدخلة.")
 
-# --- التبويب الرابع: التقارير والإدارة ---
+# --- التبويب الرابع ---
 with tab4:
     if not df.empty:
         st.markdown("### 📥 استخراج تقرير مبيعاتك الشخصية (Excel)")
