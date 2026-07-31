@@ -8,6 +8,7 @@ from sqlalchemy import text
 import io
 import os
 import random
+import calendar
 
 # إعداد الصفحة
 st.set_page_config(page_title="نظام إدارة المبيعات المتقدم", page_icon="📈", layout="wide")
@@ -38,6 +39,13 @@ st.markdown("""
         border-radius: 8px; color: #e4e6ef; font-size: 1.05rem; font-style: italic; line-height: 1.5; text-align: right; direction: rtl;
     }
     
+    /* صناديق التحليلات الذكية */
+    .smart-insight-card {
+        background-color: #232334; border-right: 4px solid #3699ff; padding: 20px; border-radius: 8px; 
+        margin-bottom: 15px; color: #e4e6ef; text-align: right; direction: rtl; line-height: 1.8;
+    }
+    .smart-insight-title { color: #3699ff; font-size: 1.2rem; font-weight: bold; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;}
+    
     .dev-footer { background: rgba(30, 30, 45, 0.7); padding: 25px; border-radius: 15px; border: 1px solid #2e2e40; text-align: center; box-shadow: 0 8px 20px rgba(0,0,0,0.3); margin-top: 30px;}
     .dev-name { font-size: 1.8rem; font-weight: bold; background: -webkit-linear-gradient(45deg, #00E676, #3699ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     .dev-title { color: #a1a5b7; font-size: 1rem; margin-bottom: 20px; letter-spacing: 1px; }
@@ -48,7 +56,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 2. نظام تسجيل الدخول المحدث (مانع أخطاء المسافات)
+# 2. نظام تسجيل الدخول 
 # ==========================================
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
@@ -86,10 +94,8 @@ if not st.session_state.logged_in:
         
         st.markdown("<br>", unsafe_allow_html=True)
         if st.button("تسجيل الدخول 🚀", use_container_width=True, type="primary"):
-            # استخدام strip() لإزالة أي مسافات فارغة كتبها المستخدم بالخطأ
             clean_user = user_input.strip()
             clean_pass = pass_input.strip()
-            
             if "users" in st.secrets and clean_user in st.secrets["users"]:
                 if str(st.secrets["users"][clean_user]) == clean_pass:
                     st.session_state.logged_in = True
@@ -199,7 +205,7 @@ df = load_data(current_user)
 today_target = load_target(today_date, current_user)
 
 # ==========================================
-# 6. الشاشة الرئيسية
+# 6. الشاشة الرئيسية والتبويبات
 # ==========================================
 st.title("📊 نظام تحليل وإدارة المبيعات")
 st.markdown("---")
@@ -222,9 +228,9 @@ else:
 if not df.empty:
     df['Date'] = pd.to_datetime(df['Date']).dt.date
 
-tab1, tab2, tab3, tab4 = st.tabs(["📈 المتابعة المباشرة", "📅 جدول مواعيد العمل الخاص بي", "🧠 التحليلات الاستراتيجية", "⚙️ التقارير الشخصية"])
+tab1, tab2, tab3, tab4 = st.tabs(["📈 المتابعة المباشرة", "🧠 التحليلات الاستراتيجية الذكية", "📅 جدول مواعيد العمل", "⚙️ التقارير الشخصية"])
 
-# --- التبويب الأول ---
+# --- التبويب الأول: المتابعة المباشرة ---
 with tab1:
     today_sales = df[df['Date'] == today_date]['Sales'].sum() if not df.empty else 0
     achievement_perc = (today_sales / today_target * 100) if today_target > 0 else 0
@@ -238,22 +244,12 @@ with tab1:
     g1, g2 = st.columns(2)
     with g1:
         time_color = "#FF4B4B" if remaining_hours < 2 else "#00E676"
-        fig_time = go.Figure(go.Indicator(
-            mode="gauge+number", value=remaining_hours, title={'text': "⏳ ساعات العمل المتبقية", 'font': {'color': 'white'}},
-            number={'suffix': " ساعة", 'font': {'color': 'white'}, 'valueformat': ".1f"},
-            gauge={'axis': {'range': [0, total_shift_hours], 'tickwidth': 1, 'tickcolor': "white"}, 'bar': {'color': time_color}, 'bgcolor': "rgba(255,255,255,0.05)"}
-        ))
+        fig_time = go.Figure(go.Indicator(mode="gauge+number", value=remaining_hours, title={'text': "⏳ ساعات العمل المتبقية", 'font': {'color': 'white'}}, number={'suffix': " ساعة", 'font': {'color': 'white'}, 'valueformat': ".1f"}, gauge={'axis': {'range': [0, total_shift_hours], 'tickwidth': 1, 'tickcolor': "white"}, 'bar': {'color': time_color}, 'bgcolor': "rgba(255,255,255,0.05)"}))
         fig_time.update_layout(paper_bgcolor="rgba(0,0,0,0)", height=300, margin=dict(t=50, b=0))
         st.plotly_chart(fig_time, use_container_width=True)
         
     with g2:
-        fig_target = go.Figure(go.Indicator(
-            mode="gauge+number+delta", value=today_sales, title={'text': "🎯 مسارك نحو الهدف", 'font': {'color': 'white'}},
-            delta={'reference': today_target, 'position': "top", 'font': {'color': 'white'}}, number={'suffix': " د.ك", 'font': {'color': 'white'}},
-            gauge={'axis': {'range': [0, max(today_target, today_sales) * 1.2 if today_target > 0 else 100], 'tickwidth': 1, 'tickcolor': "white"},
-                   'bar': {'color': ach_color}, 'bgcolor': "rgba(255,255,255,0.05)",
-                   'threshold': {'line': {'color': "white", 'width': 4}, 'thickness': 0.75, 'value': today_target}}
-        ))
+        fig_target = go.Figure(go.Indicator(mode="gauge+number+delta", value=today_sales, title={'text': "🎯 مسارك نحو الهدف", 'font': {'color': 'white'}}, delta={'reference': today_target, 'position': "top", 'font': {'color': 'white'}}, number={'suffix': " د.ك", 'font': {'color': 'white'}}, gauge={'axis': {'range': [0, max(today_target, today_sales) * 1.2 if today_target > 0 else 100], 'tickwidth': 1, 'tickcolor': "white"}, 'bar': {'color': ach_color}, 'bgcolor': "rgba(255,255,255,0.05)", 'threshold': {'line': {'color': "white", 'width': 4}, 'thickness': 0.75, 'value': today_target}}))
         fig_target.update_layout(paper_bgcolor="rgba(0,0,0,0)", height=300, margin=dict(t=50, b=0))
         st.plotly_chart(fig_target, use_container_width=True)
 
@@ -263,12 +259,86 @@ with tab1:
         fig_area.update_layout(plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)", font=dict(color="white"), height=350)
         fig_area.update_traces(line_color='#3699ff', fillcolor='rgba(54, 153, 255, 0.2)')
         st.plotly_chart(fig_area, use_container_width=True)
-    else:
-        st.info("لم يتم تسجيل مبيعات لليوم الحالي بعد.")
 
-# --- التبويب الثاني ---
+# --- التبويب الثاني: التحليلات الاستراتيجية الذكية (المطور كلياً) ---
 with tab2:
-    st.markdown("### 📅 إعداد جدول مواعيدك")
+    if not df.empty:
+        # معالجة البيانات للتحليلات
+        total_hist_sales = df['Sales'].sum()
+        days_worked = df['Date'].nunique()
+        avg_daily = total_hist_sales / days_worked if days_worked > 0 else 0
+        
+        df_slots = df.groupby('Time_Slot')['Sales'].sum().reset_index()
+        best_slot = df_slots.loc[df_slots['Sales'].idxmax()]['Time_Slot']
+        weakest_slot = df_slots.loc[df_slots['Sales'].idxmin()]['Time_Slot']
+        
+        # 1. المؤشرات العليا للتحليل
+        c_kpi1, c_kpi2, c_kpi3 = st.columns(3)
+        with c_kpi1: st.markdown(f'<div class="custom-kpi-card"><div class="kpi-title">إجمالي مبيعاتك التاريخية</div><div class="kpi-value">{total_hist_sales:,.2f} <span>د.ك</span></div></div>', unsafe_allow_html=True)
+        with c_kpi2: st.markdown(f'<div class="custom-kpi-card"><div class="kpi-title">متوسط الأداء اليومي</div><div class="kpi-value">{avg_daily:,.2f} <span>د.ك</span></div></div>', unsafe_allow_html=True)
+        with c_kpi3: st.markdown(f'<div class="custom-kpi-card"><div class="kpi-title">الفترة الذهبية (الأعلى مبيعاً)</div><div class="kpi-value" style="font-size:1.5rem; padding-top:10px;">{best_slot}</div></div>', unsafe_allow_html=True)
+        
+        # 2. الرسوم البيانية المتقدمة
+        col_charts1, col_charts2 = st.columns(2)
+        
+        with col_charts1:
+            # رسم بياني دائري لتوزيع المبيعات على الفترات
+            fig_pie = px.pie(df_slots, values='Sales', names='Time_Slot', hole=0.4, title="توزيع المبيعات الإجمالية حسب الفترات الزمنية", color_discrete_sequence=px.colors.sequential.Tealgrn)
+            fig_pie.update_layout(paper_bgcolor="rgba(0,0,0,0)", font=dict(color="white", family="Segoe UI"))
+            st.plotly_chart(fig_pie, use_container_width=True)
+            
+        with col_charts2:
+            # رسم بياني لاتجاه المبيعات اليومية
+            df_daily = df.groupby('Date')['Sales'].sum().reset_index()
+            fig_trend = px.bar(df_daily, x="Date", y="Sales", text="Sales", title="مقارنة الأداء الإجمالي للأيام السابقة")
+            fig_trend.update_traces(marker_color='#3699ff', texttemplate='%{text:,.0f}')
+            fig_trend.update_layout(plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)", font=dict(color="white", family="Segoe UI"))
+            st.plotly_chart(fig_trend, use_container_width=True)
+
+        # 3. قسم الذكاء الاصطناعي (الاستنتاجات والتوصيات)
+        st.markdown("### 🧠 محلل الأداء الذكي (AI Analyst)")
+        
+        # التنبؤ لنهاية الشهر
+        days_in_month = calendar.monthrange(today_date.year, today_date.month)[1]
+        predicted_month_sales = avg_daily * days_in_month
+        
+        col_ai1, col_ai2 = st.columns(2)
+        with col_ai1:
+            st.markdown(f"""
+            <div class="smart-insight-card">
+                <div class="smart-insight-title">📊 التنبؤ الشهري (Forecast)</div>
+                بناءً على متوسط مبيعاتك اليومي البالغ <b>{avg_daily:,.2f} د.ك</b>، يتوقع النظام أن تنهي هذا الشهر بإجمالي مبيعات يصل إلى <b>{predicted_month_sales:,.2f} د.ك</b> تقريباً. 
+                حافظ على هذه الوتيرة أو قم بزيادتها لكسر هذا الرقم المتوقع!
+            </div>
+            """, unsafe_allow_html=True)
+            
+            st.markdown(f"""
+            <div class="smart-insight-card">
+                <div class="smart-insight-title">🔍 استنتاج السلوك البيعي</div>
+                تُظهر البيانات أن <b>{best_slot}</b> هي نافذتك الأقوى والتي تحقق فيها أعلى معدلات التحويل. 
+                بينما تُعد <b>{weakest_slot}</b> هي النقطة التي تحتاج إلى تنشيط ومجهود إضافي.
+            </div>
+            """, unsafe_allow_html=True)
+            
+        with col_ai2:
+            st.markdown(f"""
+            <div class="smart-insight-card">
+                <div class="smart-insight-title">💡 توصيات استراتيجية</div>
+                <ul>
+                    <li><b>استغلال الذروة:</b> في <i>{best_slot}</i>، ركز على اقتراح المنتجات ذات القيمة العالية (Up-selling) لأن الضيوف في هذا الوقت أكثر قابلية للشراء.</li>
+                    <li><b>تنشيط الركود:</b> في <i>{weakest_slot}</i>، استخدم تكتيكات ربط المنتجات (Cross-selling) وحاول زيادة متوسط سلة الشراء لكل ضيف لتعويض قلة العدد.</li>
+                    <li><b>متابعة الهدف:</b> تارجت اليوم هو <b>{today_target:,.2f} د.ك</b>. اجعل تركيزك منصباً على كيفية تقسيم هذا الرقم على عدد ساعات الشيفت لتقليل الضغط.</li>
+                </ul>
+            </div>
+            """, unsafe_allow_html=True)
+    else:
+        st.info("التحليلات الذكية تتطلب إدخال بيانات مبيعات مسبقة لكي يتمكن النظام من قراءة أدائك.")
+
+# --- التبويب الثالث: جدول مواعيد العمل (مع إضافة الحذف) ---
+with tab3:
+    st.markdown("### 📅 إعداد وإدارة جدول مواعيدك")
+    
+    # 1. إدخال موعد جديد
     with st.form("schedule_form"):
         col_s1, col_s2, col_s3 = st.columns(3)
         with col_s1: sched_date = st.date_input("تاريخ الشيفت المستهدف")
@@ -285,32 +355,35 @@ with tab2:
             st.rerun()
             
     st.markdown("---")
-    st.markdown("#### 📆 شيفتاتك المبرمجة")
+    
+    # 2. عرض الجدول وحذف المواعيد
     all_sched_query = f"""SELECT date AS "التاريخ", start_time AS "وقت البداية", end_time AS "وقت النهاية" FROM user_shift_schedule WHERE username = '{current_user}' ORDER BY date DESC"""
     all_schedules = conn.query(all_sched_query, ttl=0)
-    if not all_schedules.empty:
-        st.dataframe(all_schedules, use_container_width=True, hide_index=True)
-    else:
-        st.info("جدولك فارغ حالياً.")
+    
+    col_table, col_delete = st.columns([2, 1])
+    
+    with col_table:
+        st.markdown("#### 📆 شيفتاتك المبرمجة")
+        if not all_schedules.empty:
+            st.dataframe(all_schedules, use_container_width=True, hide_index=True)
+        else:
+            st.info("جدولك فارغ حالياً.")
+            
+    with col_delete:
+        st.markdown("#### 🗑️ حذف موعد من الجدول")
+        if not all_schedules.empty:
+            del_sched_date = st.selectbox("اختر التاريخ للحذف", all_schedules['التاريخ'].unique())
+            if st.button("حذف الموعد المحدد", type="secondary", use_container_width=True):
+                with conn.session as s:
+                    s.execute(text("DELETE FROM user_shift_schedule WHERE date = :date AND username = :user"),
+                              {"date": str(del_sched_date), "user": current_user})
+                    s.commit()
+                st.success("تم الحذف بنجاح!")
+                st.rerun()
+        else:
+            st.caption("لا توجد مواعيد لحذفها.")
 
-# --- التبويب الثالث ---
-with tab3:
-    if not df.empty:
-        col_heat, col_trend = st.columns(2)
-        with col_heat:
-            fig_heat = px.density_heatmap(df, x="Time_Slot", y="Date", z="Sales", histfunc="sum", title="خريطة كثافة أدائك الشخصي")
-            fig_heat.update_layout(paper_bgcolor="rgba(0,0,0,0)", font=dict(color="white"))
-            st.plotly_chart(fig_heat, use_container_width=True)
-        with col_trend:
-            df_daily = df.groupby('Date')['Sales'].sum().reset_index()
-            fig_trend = px.bar(df_daily, x="Date", y="Sales", text="Sales", title="مقارنة أدائك اليومي")
-            fig_trend.update_traces(marker_color='#3699ff', texttemplate='%{text:,.0f}')
-            fig_trend.update_layout(plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)", font=dict(color="white"))
-            st.plotly_chart(fig_trend, use_container_width=True)
-    else:
-        st.warning("التحليلات تتطلب بيانات مدخلة.")
-
-# --- التبويب الرابع ---
+# --- التبويب الرابع: التقارير ---
 with tab4:
     if not df.empty:
         st.markdown("### 📥 استخراج تقرير مبيعاتك الشخصية (Excel)")
@@ -326,7 +399,7 @@ with tab4:
         st.dataframe(display_df.style.format({"المبيعات (د.ك)": "{:.2f}"}), use_container_width=True, hide_index=True)
         
         st.markdown("---")
-        st.markdown("#### 🗑️ تصحيح قيد خاطئ")
+        st.markdown("#### 🗑️ تصحيح قيد مبيعات خاطئ")
         c1, c2, c3 = st.columns(3)
         with c1: del_date = st.selectbox("تاريخ القيد", df['Date'].unique())
         with c2: del_slot = st.selectbox("الفترة المستهدفة", df[df['Date'] == del_date]['Time_Slot'].unique())
