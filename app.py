@@ -6,54 +6,156 @@ from datetime import datetime, timedelta
 import pytz
 from sqlalchemy import text
 import io
+import os
 
 # إعداد الصفحة
 st.set_page_config(page_title="نظام إدارة المبيعات المتقدم", page_icon="📈", layout="wide")
 
 # ==========================================
-# 1. تصميم CSS الاحترافي (RTL)
+# 1. تصميم CSS الاحترافي (RTL & Login UI)
 # ==========================================
 st.markdown("""
     <style>
+    /* الإعدادات العامة */
     .main .block-container { direction: rtl; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    
+    /* بطاقات المؤشرات */
     .custom-kpi-card { background: linear-gradient(145deg, #1e1e2d, #26273b); border-right: 5px solid #00E676; border-radius: 12px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); margin-bottom: 20px; text-align: right; }
     .kpi-title { color: #a1a5b7; font-size: 1.1rem; margin-bottom: 8px; font-weight: 500; }
     .kpi-value { color: #ffffff; font-size: 2.2rem; font-weight: bold; }
     .kpi-value span { color: #00E676; font-size: 1.2rem; margin-right: 5px; }
     .insight-box { background-color: #232334; padding: 20px; border-radius: 8px; border-right: 4px solid #3699ff; margin-bottom: 15px; color: #e4e6ef; line-height: 1.6; text-align: right; direction: rtl;}
-    .login-box { max-width: 400px; margin: 100px auto; padding: 40px; background-color: #1e1e2d; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; }
     
     /* تنسيق أزرار التبويبات */
     .stTabs [data-baseweb="tab-list"] { gap: 10px; }
     .stTabs [data-baseweb="tab"] { background-color: #1e1e2d; border-radius: 8px 8px 0 0; padding: 10px 20px; }
+    
+    /* =========================================
+       تصميم شاشة تسجيل الدخول الاحترافية 
+       ========================================= */
+    .login-box { 
+        padding: 40px; 
+        background: linear-gradient(145deg, #1e1e2d, #26273b); 
+        border-radius: 20px; 
+        box-shadow: 0 15px 35px rgba(0,0,0,0.5); 
+        text-align: center;
+        border-top: 4px solid #00E676;
+        margin-bottom: 30px;
+    }
+    
+    /* تصميم بطاقة المطور */
+    .dev-footer {
+        background: rgba(30, 30, 45, 0.7);
+        padding: 25px;
+        border-radius: 15px;
+        border: 1px solid #2e2e40;
+        text-align: center;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    }
+    .dev-name {
+        font-size: 1.8rem;
+        font-weight: bold;
+        background: -webkit-linear-gradient(45deg, #00E676, #3699ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 5px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .dev-title {
+        color: #a1a5b7;
+        font-size: 1rem;
+        margin-bottom: 20px;
+        letter-spacing: 1px;
+    }
+    .social-links {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        flex-wrap: wrap;
+        direction: ltr; /* للحفاظ على ترتيب الأيقونات الانجليزية */
+    }
+    .social-links a {
+        color: #e4e6ef;
+        text-decoration: none;
+        font-size: 0.95rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        padding: 10px 18px;
+        background: #232334;
+        border-radius: 8px;
+        border: 1px solid #333;
+    }
+    .social-links a:hover {
+        background: #3699ff;
+        color: white;
+        border-color: #3699ff;
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(54, 153, 255, 0.4);
+    }
     </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 2. نظام تسجيل الدخول (مع دعم تعدد المستخدمين)
+# 2. نظام تسجيل الدخول (الشاشة الافتتاحية)
 # ==========================================
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
     st.session_state.username = ""
 
 if not st.session_state.logged_in:
-    st.markdown('<div class="login-box">', unsafe_allow_html=True)
-    st.title("🔐 تسجيل الدخول")
-    st.markdown("---")
-    user_input = st.text_input("اسم المستخدم")
-    pass_input = st.text_input("كلمة المرور", type="password")
-    if st.button("دخول للنظام", use_container_width=True, type="primary"):
-        if "users" in st.secrets and user_input in st.secrets["users"]:
-            if st.secrets["users"][user_input] == pass_input:
-                st.session_state.logged_in = True
-                st.session_state.username = user_input
-                st.rerun()
-            else:
-                st.error("❌ كلمة المرور غير صحيحة")
+    # استخدام أعمدة لتوسيط المحتوى في الشاشة
+    col1, col2, col3 = st.columns([1, 1.5, 1])
+    
+    with col2:
+        st.markdown("<br><br>", unsafe_allow_html=True)
+        
+        # 1. عرض الشعار (Logo)
+        if os.path.exists("logo.jpg"):
+            # توسيط الصورة داخل العمود
+            img_col1, img_col2, img_col3 = st.columns([1, 2, 1])
+            with img_col2:
+                st.image("logo.jpg", use_container_width=True)
         else:
-            st.error("❌ اسم المستخدم غير مسجل")
-    st.markdown('</div>', unsafe_allow_html=True)
-    st.stop()
+            st.warning("⚠️ الشعار غير موجود. يرجى التأكد من تسمية الصورة 'logo.jpg' ووضعها في مجلد المشروع.")
+
+        # 2. صندوق تسجيل الدخول
+        st.markdown('<div class="login-box">', unsafe_allow_html=True)
+        st.markdown("<h2 style='text-align: center; color: white; margin-bottom: 20px;'>نظام إدارة المبيعات المتقدم</h2>", unsafe_allow_html=True)
+        
+        user_input = st.text_input("اسم المستخدم", placeholder="أدخل اسم المستخدم هنا...")
+        pass_input = st.text_input("كلمة المرور", type="password", placeholder="أدخل كلمة المرور...")
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.button("تسجيل الدخول 🚀", use_container_width=True, type="primary"):
+            if "users" in st.secrets and user_input in st.secrets["users"]:
+                if st.secrets["users"][user_input] == pass_input:
+                    st.session_state.logged_in = True
+                    st.session_state.username = user_input
+                    st.rerun()
+                else:
+                    st.error("❌ كلمة المرور غير صحيحة")
+            else:
+                st.error("❌ اسم المستخدم غير مسجل في النظام")
+        st.markdown('</div>', unsafe_allow_html=True)
+        
+        # 3. بطاقة تعريف المطور (Developer Footer)
+        st.markdown("""
+        <div class="dev-footer">
+            <div class="dev-name">Ahmed Fathi The Wolf</div>
+            <div class="dev-title">Pharmacist, Data Analyst & Researcher</div>
+            <div class="social-links">
+                <a href="http://ahmedmf.online/" target="_blank">🌐 Website</a>
+                <a href="https://www.linkedin.com/in/ahmed-fathi-132101" target="_blank">💼 LinkedIn</a>
+                <a href="https://github.com/ahmedmfathi101-droid" target="_blank">🐙 GitHub</a>
+                <a href="https://x.com/ahmed101fathi" target="_blank">𝕏 X</a>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+    st.stop() # إيقاف التنفيذ هنا حتى يتم تسجيل الدخول
 
 # ==========================================
 # 3. الاتصال بقاعدة البيانات وتهيئة العزل
@@ -61,15 +163,12 @@ if not st.session_state.logged_in:
 conn = st.connection("postgresql", type="sql")
 
 with conn.session as s:
-    # جدول المبيعات (يحمل اسم المستخدم كمعرف للعزل)
     s.execute(text('''
         CREATE TABLE IF NOT EXISTS sales_data (
             id SERIAL PRIMARY KEY, date DATE, day VARCHAR(50),
             time_slot VARCHAR(100), sales DOUBLE PRECISION, entered_by VARCHAR(50)
         )
     '''))
-    
-    # الجداول الجديدة المعزولة تماماً لكل مستخدم بناءً على (date, username)
     s.execute(text('''
         CREATE TABLE IF NOT EXISTS user_daily_targets (
             date DATE, username VARCHAR(50), target DOUBLE PRECISION,
@@ -84,7 +183,6 @@ with conn.session as s:
     '''))
     s.commit()
 
-# دوال استدعاء البيانات (مفلترة برقم واسم المستخدم فقط)
 def load_data(user):
     return conn.query('SELECT date AS "Date", day AS "Day", time_slot AS "Time_Slot", sales AS "Sales" FROM sales_data WHERE entered_by = :user ORDER BY date, time_slot', params={"user": user}, ttl=0)
 
@@ -93,7 +191,7 @@ def load_target(d, user):
     return target_df.iloc[0]['target'] if not target_df.empty else 0.0
 
 # ==========================================
-# 4. إعدادات الوقت والجدولة الذكية الخاصة بالمستخدم
+# 4. إعدادات الوقت والجدولة الذكية 
 # ==========================================
 cairo_tz = pytz.timezone('Africa/Cairo')
 now = datetime.now(cairo_tz)
@@ -111,7 +209,6 @@ if st.sidebar.button("🔄 تحديث الوقت والبيانات", use_contai
     st.rerun()
 st.sidebar.info(f"**الوقت المباشر:** {now.strftime('%I:%M %p')}")
 
-# -- النظام الذكي لحساب الشيفت (مستقل لكل مستخدم) --
 sched_df = conn.query("SELECT start_time, end_time FROM user_shift_schedule WHERE date = :date AND username = :user", params={"date": today_date, "user": current_user}, ttl=0)
 if not sched_df.empty:
     start_str = sched_df.iloc[0]['start_time']
@@ -152,7 +249,6 @@ with st.sidebar.expander("🎯 تعيين الهدف البيعي الخاص ب�
         st.success("تم التحديث!")
         st.rerun()
 
-# استدعاء بيانات المستخدم المعزولة
 df = load_data(current_user)
 today_target = load_target(today_date, current_user)
 
@@ -162,7 +258,6 @@ today_target = load_target(today_date, current_user)
 st.title("📊 نظام تحليل وإدارة المبيعات")
 st.markdown("---")
 
-# حسابات الوقت الدقيقة
 shift_start_dt = cairo_tz.localize(datetime.combine(today_date, shift_start_time))
 shift_end_dt = cairo_tz.localize(datetime.combine(today_date, shift_end_time))
 if shift_end_dt <= shift_start_dt:
@@ -298,7 +393,6 @@ with tab4:
         with c3:
             st.markdown("<br>", unsafe_allow_html=True)
             if st.button("حذف قيدي", type="secondary", use_container_width=True):
-                # قيد الحذف يعتمد أيضاً على اسم المستخدم لمنعه من حذف بيانات غيره
                 with conn.session as s:
                     s.execute(text("DELETE FROM sales_data WHERE date = :date AND time_slot = :slot AND entered_by = :user"), {"date": del_date, "slot": del_slot, "user": current_user})
                     s.commit()
