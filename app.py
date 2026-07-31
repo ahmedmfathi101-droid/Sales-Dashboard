@@ -25,27 +25,35 @@ st.markdown("""
     .kpi-title { color: #a1a5b7; font-size: 1.1rem; margin-bottom: 8px; font-weight: 500; }
     .kpi-value { color: #ffffff; font-size: 2.2rem; font-weight: bold; }
     .kpi-value span { color: #00E676; font-size: 1.2rem; margin-right: 5px; }
-    .insight-box { background-color: #232334; padding: 20px; border-radius: 8px; border-right: 4px solid #3699ff; margin-bottom: 15px; color: #e4e6ef; line-height: 1.6; text-align: right; direction: rtl;}
     
     /* تنسيق أزرار التبويبات */
     .stTabs [data-baseweb="tab-list"] { gap: 10px; }
     .stTabs [data-baseweb="tab"] { background-color: #1e1e2d; border-radius: 8px 8px 0 0; padding: 10px 20px; }
     
-    /* تصميم شاشة تسجيل الدخول الاحترافية */
-    .login-box { 
-        padding: 30px; 
-        background: linear-gradient(145deg, #1e1e2d, #26273b); 
-        border-radius: 20px; 
-        box-shadow: 0 15px 35px rgba(0,0,0,0.5); 
-        text-align: center;
-        border-top: 4px solid #00E676;
-        margin-bottom: 30px;
+    /* =========================================
+       تصميم شاشة تسجيل الدخول المحدثة
+       ========================================= */
+       
+    /* صندوق الحكمة الإنجليزية (علوي وموسط) */
+    .english-quote-box {
+        padding: 20px;
+        background: linear-gradient(145deg, #1e1e2d, #26273b);
+        border-radius: 15px;
+        border-top: 4px solid #00E676; 
+        color: #e4e6ef;
+        font-size: 1.15rem;
+        font-style: italic;
+        text-align: center; /* توسيط الكلام الإنجليزي */
+        direction: ltr; /* اتجاه الكتابة من اليسار لليمين */
+        box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        margin-bottom: 25px;
+        font-family: 'Georgia', serif;
     }
     
-    /* تصميم بوكس الحكمة التحفيزية */
-    .sales-quote-box {
+    /* صندوق الحكمة العربية (يمين) */
+    .arabic-quote-box {
         background: rgba(0, 230, 118, 0.05);
-        border-right: 3px solid #00E676;
+        border-right: 4px solid #00E676;
         padding: 15px;
         margin: 20px 0;
         border-radius: 8px;
@@ -53,10 +61,12 @@ st.markdown("""
         font-size: 1.05rem;
         font-style: italic;
         line-height: 1.5;
+        text-align: right; /* محاذاة لليمين */
+        direction: rtl; /* اتجاه عربي */
     }
     
     /* تصميم بطاقة المطور */
-    .dev-footer { background: rgba(30, 30, 45, 0.7); padding: 25px; border-radius: 15px; border: 1px solid #2e2e40; text-align: center; box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
+    .dev-footer { background: rgba(30, 30, 45, 0.7); padding: 25px; border-radius: 15px; border: 1px solid #2e2e40; text-align: center; box-shadow: 0 8px 20px rgba(0,0,0,0.3); margin-top: 30px;}
     .dev-name { font-size: 1.8rem; font-weight: bold; background: -webkit-linear-gradient(45deg, #00E676, #3699ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     .dev-title { color: #a1a5b7; font-size: 1rem; margin-bottom: 20px; letter-spacing: 1px; }
     .social-links { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; direction: ltr; }
@@ -66,41 +76,51 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 2. نظام تسجيل الدخول (مع بوكس الحكمة)
+# 2. نظام تسجيل الدخول (مع الحكم المتغيرة)
 # ==========================================
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
     st.session_state.username = ""
 
 if not st.session_state.logged_in:
-    # قائمة الحكم والمقولات (مخصصة للبيع وبناء العلاقات)
-    quotes = [
+    # قائمة الحكم الإنجليزية
+    eng_quotes = [
+        "\"The best salespeople wonder what they would want if they were the buyer.\" – Richard Thalheimer",
+        "\"Success in sales is the sum of small efforts, repeated day in and day out.\" – Robert Collier",
+        "\"Approach each customer with the idea of helping him solve a problem, not of selling a product.\" – Brian Tracy",
+        "\"Great salespeople are relationship builders who provide value and help their customers win.\" – Jeffrey Gitomer"
+    ]
+    
+    # قائمة الحكم العربية
+    ar_quotes = [
         "«المبيعات ليست مجرد أرقام، بل هي فن بناء الثقة وحل مشكلات ضيوفنا.»",
         "«أفضل بائع هو من يمتلك مهارة الاستماع الفعال والتعاطف مع احتياجات العميل.»",
         "«لا تبيع منتجاً، بل قدم رعايةً وحلاً يصنع فارقاً حقيقياً.»",
-        "«النجاح في المبيعات هو نتيجة الانضباط اليومي، والالتزام بأعلى المعايير الأخلاقية.»",
-        "«كل مكالمة هي فرصة جديدة لبناء علاقة استثنائية وترك أثر إيجابي.»"
+        "«النجاح في المبيعات هو نتيجة الانضباط اليومي، والالتزام بأعلى المعايير الأخلاقية.»"
     ]
-    selected_quote = random.choice(quotes)
+    
+    selected_eng_quote = random.choice(eng_quotes)
+    selected_ar_quote = random.choice(ar_quotes)
 
     col1, col2, col3 = st.columns([1, 1.5, 1])
     
     with col2:
-        st.markdown("<br><br>", unsafe_allow_html=True)
+        st.markdown("<br>", unsafe_allow_html=True)
         
-        # عرض الشعار
+        # 1. البوكس العلوي: الحكمة الإنجليزية (تم حل مشكلة البوكس الفارغ وتوسيط النص)
+        st.markdown(f'<div class="english-quote-box">{selected_eng_quote}</div>', unsafe_allow_html=True)
+        
+        # 2. الشعار
         if os.path.exists("logo.jpg"):
             img_col1, img_col2, img_col3 = st.columns([1, 2, 1])
             with img_col2:
                 st.image("logo.jpg", use_container_width=True)
+                
+        # 3. العنوان والحكمة العربية (محاذاة لليمين)
+        st.markdown("<h2 style='text-align: center; color: white; margin-top: 15px;'>نظام إدارة المبيعات المتقدم</h2>", unsafe_allow_html=True)
+        st.markdown(f'<div class="arabic-quote-box">💡 {selected_ar_quote}</div>', unsafe_allow_html=True)
         
-        # صندوق تسجيل الدخول
-        st.markdown('<div class="login-box">', unsafe_allow_html=True)
-        st.markdown("<h2 style='text-align: center; color: white; margin-bottom: 5px;'>نظام إدارة المبيعات المتقدم</h2>", unsafe_allow_html=True)
-        
-        # بوكس الحكمة المضاف حديثاً
-        st.markdown(f'<div class="sales-quote-box">💡 {selected_quote}</div>', unsafe_allow_html=True)
-        
+        # 4. حقول الإدخال
         user_input = st.text_input("اسم المستخدم", placeholder="أدخل اسم المستخدم هنا...")
         pass_input = st.text_input("كلمة المرور", type="password", placeholder="أدخل كلمة المرور...")
         
@@ -115,9 +135,8 @@ if not st.session_state.logged_in:
                     st.error("❌ كلمة المرور غير صحيحة")
             else:
                 st.error("❌ اسم المستخدم غير مسجل في النظام")
-        st.markdown('</div>', unsafe_allow_html=True)
-        
-        # بطاقة تعريف المطور
+                
+        # 5. بطاقة تعريف المطور (تعديل أيقونة X)
         st.markdown("""
         <div class="dev-footer">
             <div class="dev-name">Ahmed Fathi The Wolf</div>
@@ -126,7 +145,7 @@ if not st.session_state.logged_in:
                 <a href="http://ahmedmf.online/" target="_blank">🌐 Website</a>
                 <a href="https://www.linkedin.com/in/ahmed-fathi-132101" target="_blank">💼 LinkedIn</a>
                 <a href="https://github.com/ahmedmfathi101-droid" target="_blank">🐙 GitHub</a>
-                <a href="https://x.com/ahmed101fathi" target="_blank">𝕏 X</a>
+                <a href="https://x.com/ahmed101fathi" target="_blank">𝕏</a>
             </div>
         </div>
         """, unsafe_allow_html=True)
