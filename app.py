@@ -48,7 +48,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 2. نظام تسجيل الدخول (الشاشة الافتتاحية)
+# 2. نظام تسجيل الدخول المحدث (مانع أخطاء المسافات)
 # ==========================================
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
@@ -86,10 +86,14 @@ if not st.session_state.logged_in:
         
         st.markdown("<br>", unsafe_allow_html=True)
         if st.button("تسجيل الدخول 🚀", use_container_width=True, type="primary"):
-            if "users" in st.secrets and user_input in st.secrets["users"]:
-                if st.secrets["users"][user_input] == pass_input:
+            # استخدام strip() لإزالة أي مسافات فارغة كتبها المستخدم بالخطأ
+            clean_user = user_input.strip()
+            clean_pass = pass_input.strip()
+            
+            if "users" in st.secrets and clean_user in st.secrets["users"]:
+                if str(st.secrets["users"][clean_user]) == clean_pass:
                     st.session_state.logged_in = True
-                    st.session_state.username = user_input
+                    st.session_state.username = clean_user
                     st.rerun()
                 else:
                     st.error("❌ كلمة المرور غير صحيحة")
@@ -111,7 +115,7 @@ if not st.session_state.logged_in:
     st.stop()
 
 # ==========================================
-# 3. الاتصال بقاعدة البيانات وتهيئة العزل (بأمان تام)
+# 3. الاتصال بقاعدة البيانات وتهيئة العزل 
 # ==========================================
 conn = st.connection("postgresql", type="sql")
 
@@ -121,7 +125,6 @@ with conn.session as s:
     s.execute(text('''CREATE TABLE IF NOT EXISTS user_shift_schedule (date DATE, username VARCHAR(50), start_time VARCHAR(10), end_time VARCHAR(10), PRIMARY KEY (date, username))'''))
     s.commit()
 
-# تم إصلاح دوال الاستدعاء لمنع أخطاء (Parameter Binding) نهائياً
 def load_data(user):
     query = f"""SELECT date AS "Date", day AS "Day", time_slot AS "Time_Slot", sales AS "Sales" FROM sales_data WHERE entered_by = '{user}' ORDER BY date, time_slot"""
     return conn.query(query, ttl=0)
@@ -150,7 +153,6 @@ if st.sidebar.button("🔄 تحديث الوقت والبيانات", use_contai
     st.rerun()
 st.sidebar.info(f"**الوقت المباشر:** {now.strftime('%I:%M %p')}")
 
-# إصلاح استعلام الجدول الزمني
 sched_query = f"""SELECT start_time, end_time FROM user_shift_schedule WHERE date = '{str(today_date)}' AND username = '{current_user}'"""
 sched_df = conn.query(sched_query, ttl=0)
 
