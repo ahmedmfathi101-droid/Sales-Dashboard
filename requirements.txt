@@ -1,5 +1,6 @@
 streamlit
 pandas
 plotly
-duckdb
 pytz
+SQLAlchemy
+psycopg2-binary
