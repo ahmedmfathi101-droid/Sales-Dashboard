@@ -48,13 +48,6 @@ This is an enterprise-level, multi-tenant sales dashboard built with **Streamlit
 <img width="1858" height="800" alt="7" src="https://github.com/user-attachments/assets/10a4e916-a69b-488c-a465-05cd25b73c56" />
 
 
-#📬 Contact (للتواصل)
-##LinkedIn: Ahmed Fathi
-
-##X (Twitter): @ahmed101fathi
-
-##Portfolio: Ahmed Fathi The Wolf
-
 
 
 
