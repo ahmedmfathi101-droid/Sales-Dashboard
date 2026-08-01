@@ -123,7 +123,13 @@ if not st.session_state.logged_in:
 # ==========================================
 # 3. الاتصال بقاعدة البيانات وتهيئة العزل 
 # ==========================================
-conn = st.connection("postgresql", type="sql")
+conn = st.connection(
+    "postgresql", 
+    type="sql", 
+    pool_pre_ping=True, 
+    pool_recycle=300,
+    connect_args={"connect_timeout": 15}
+    )
 
 with conn.session as s:
     s.execute(text('''CREATE TABLE IF NOT EXISTS sales_data (id SERIAL PRIMARY KEY, date DATE, day VARCHAR(50), time_slot VARCHAR(100), sales DOUBLE PRECISION, entered_by VARCHAR(50))'''))
